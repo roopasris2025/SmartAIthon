@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from app.utils.helpers    import get_db, success_response, error_response, is_valid_object_id
 from app.utils.validators import validate_bin
 from app.models.bin_model import create_bin_schema, serialize_bin, BIN_STATUSES
+from app.models.iot_model import get_fill_level_status
 
 
 # ── Get All Bins ───────────────────────────────────────────────────────────────
@@ -107,15 +108,11 @@ def update_bin(bin_id: str):
         if field in data:
             updates[field] = data[field]
 
-    # Auto-set status based on fill level
+    # Auto-set status based on fill level using refined thresholds
     if "fillLevel" in updates:
         level = float(updates["fillLevel"])
-        if level >= 100:
-            updates["status"] = "overflow"
-        elif level >= 80:
-            updates["status"] = "full"
-        elif updates.get("status") not in ("maintenance",):
-            updates["status"] = "normal"
+        # Use the IoT model's threshold logic
+        updates["status"] = get_fill_level_status(level)
 
     # If being emptied (status→normal and fill goes low)
     if updates.get("fillLevel", 100) < 20 and updates.get("status") == "normal":

@@ -35,6 +35,11 @@ def is_valid_object_id(oid: str) -> bool:
         return False
 
 
+def validate_objectid(oid: str) -> bool:
+    """Alias for is_valid_object_id for consistency."""
+    return is_valid_object_id(oid)
+
+
 def parse_object_id(oid: str):
     """Parse string → ObjectId.  Returns None on failure."""
     try:
